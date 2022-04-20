@@ -1,6 +1,17 @@
 <template>
   <div class="validate-input-container pb-3">
     <input
+      v-if="tag !== 'textarea'"
+      type="text"
+      class="form-control"
+      :class="{ 'is-invalid': inputRef.error }"
+      :value="inputRef.val"
+      @blur="validateInput"
+      @input="updateValue"
+      v-bind="$attrs"
+    />
+    <textarea
+      v-else
       type="text"
       class="form-control"
       :class="{ 'is-invalid': inputRef.error }"
@@ -26,17 +37,22 @@ interface limitProp {
   length: number
 }
 interface RuleProp {
-  type: 'require' | 'email' | 'range'
+  type: 'required' | 'email' | 'range'
   message?: string
   min?: limitProp
   max?: limitProp
 }
 export type RulesProp = RuleProp[]
+export type TagType = 'oninput' | 'textarea'
 export default defineComponent({
   name: 'ValidateInput',
   props: {
     rules: Array as PropType<RulesProp>,
-    modelValue: String
+    modelValue: String,
+    tag: {
+      type: String as PropType<TagType>,
+      default: 'input'
+    }
   },
   inheritAttrs: false,
   setup(props, context) {
@@ -79,7 +95,7 @@ export default defineComponent({
             inputRef.message = rule.message
           }
           switch (rule.type) {
-            case 'require':
+            case 'required':
               passed = inputRef.val.trim() !== ''
               break
             case 'email':
