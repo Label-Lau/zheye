@@ -53,7 +53,7 @@ const postAndCommit = async (
   url: string,
   mutationName: string,
   commit: Commit,
-  payload: never
+  payload: any
 ) => {
   const { data } = await axios.post(url, payload)
   commit(mutationName, data)
