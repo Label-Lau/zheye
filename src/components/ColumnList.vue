@@ -9,7 +9,7 @@
             class="rounded-circle border border-light my-3"
           />
           <h5 class="card-title">{{ column.title }}</h5>
-          <p class="card-text">{{ column.description }}</p>
+          <p class="card-text">{{      column.description }}</p>
           <router-link
             :to="`/column/${column._id}`"
             class="btn btn-outline-primary"
