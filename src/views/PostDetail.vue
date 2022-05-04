@@ -22,6 +22,16 @@
         >
       </div>
       <div v-html="currentHTML"></div>
+      <div v-if="showEditArea" class="btn-group mt-5">
+        <router-link
+          type="button"
+          class="btn btn-success"
+          :to="{ name: 'create', query: { id: currentPost._id } }"
+        >
+          编辑
+        </router-link>
+        <button type="button" class="btn btn-danger">删除</button>
+      </div>
     </article>
   </div>
 </template>
@@ -45,11 +55,13 @@ export default defineComponent({
     const currentId = route.params.id
     const md = new MarkdownIt()
     onMounted(() => {
+      // 获取文章详情
       store.dispatch('fetchPost', currentId)
     })
     const currentPost = computed<PostProps>(() =>
       store.getters.getCurrentPost(currentId)
     )
+    // 文章内容
     const currentHTML = computed(() => {
       if (currentPost.value && currentPost.value.content) {
         return md.render(currentPost.value.content)
@@ -66,6 +78,7 @@ export default defineComponent({
         return false
       }
     })
+    // 获取文章标题图片
     const currentImageUrl = computed(() => {
       if (currentPost.value && currentPost.value.image) {
         const { image } = currentPost.value

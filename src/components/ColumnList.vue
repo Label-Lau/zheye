@@ -8,7 +8,6 @@
             :alt="column.title"
             class="rounded-circle border border-light my-3"
           />
-          {{ column.avatar }}
           <h5 class="card-title">{{ column.title }}</h5>
           <p class="card-text">{{ column.description }}</p>
           <router-link

@@ -2,22 +2,18 @@
   <div class="validate-input-container pb-3">
     <input
       v-if="tag !== 'textarea'"
-      type="text"
       class="form-control"
       :class="{ 'is-invalid': inputRef.error }"
-      :value="inputRef.val"
+      v-model="inputRef.val"
       @blur="validateInput"
-      @input="updateValue"
       v-bind="$attrs"
     />
     <textarea
       v-else
-      type="text"
       class="form-control"
       :class="{ 'is-invalid': inputRef.error }"
-      :value="inputRef.val"
+      v-model="inputRef.val"
       @blur="validateInput"
-      @input="updateValue"
       v-bind="$attrs"
     />
     <span v-if="inputRef.error" class="invalid-feedback">
@@ -27,7 +23,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, PropType, onMounted } from 'vue'
+import { defineComponent, reactive, PropType, onMounted, computed } from 'vue'
 import { emitter } from './ValidateForm.vue'
 
 const emailReg =
@@ -37,7 +33,7 @@ interface limitProp {
   length: number
 }
 interface RuleProp {
-  type: 'required' | 'email' | 'range'| 'custom'
+  type: 'required' | 'email' | 'range' | 'custom'
   message?: string
   validator?: () => boolean
   min?: limitProp
@@ -46,7 +42,6 @@ interface RuleProp {
 export type RulesProp = RuleProp[]
 export type TagType = 'oninput' | 'textarea'
 export default defineComponent({
-  name: 'ValidateInput',
   props: {
     rules: Array as PropType<RulesProp>,
     modelValue: String,
@@ -58,15 +53,15 @@ export default defineComponent({
   inheritAttrs: false,
   setup(props, context) {
     const inputRef = reactive({
-      val: props.modelValue || '',
+      val: computed({
+        get: () => props.modelValue || '',
+        set: (val) => {
+          context.emit('update:modelValue', val)
+        }
+      }),
       error: false,
       message: ''
     })
-    const updateValue = (e: KeyboardEvent) => {
-      const targetValue = (e.target as HTMLInputElement).value
-      inputRef.val = targetValue
-      context.emit('update:modelValue', targetValue)
-    }
     // 判断字符串长度是否在 range 范围内
     const isInRange = (rule: RuleProp) => {
       let rangeFlag = true
@@ -118,19 +113,12 @@ export default defineComponent({
       }
       return true
     }
-    // 清空 inputRef
-    const clearInput = () => {
-      inputRef.val = ''
-    }
     onMounted(() => {
       emitter.emit('form-item-created', validateInput)
-      emitter.emit('form-item-clear', clearInput)
     })
     return {
       inputRef,
-      validateInput,
-      updateValue,
-      clearInput
+      validateInput
     }
   }
 })
