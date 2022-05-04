@@ -1,12 +1,12 @@
 <template>
   <div class="column-detail-page w-75 mx-auto">
     <div
-      v-if="column"
       class="column-info row mb-4 border-bottom pb-4 align-items-center"
+      v-if="column"
     >
       <div class="col-3 text-center">
         <img
-          :src="column.avatar.url"
+          :src="column.avatar && column.avatar.fitUrl"
           :alt="column.title"
           class="rounded-circle border w-100"
         />
@@ -21,26 +21,35 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onMounted } from 'vue'
+import { defineComponent, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import PostList from '../components/PostList.vue'
 import { useStore } from 'vuex'
-
+import { GlobalDataProps, ColumnProps } from '@/store'
+import PostList from '../components/PostList.vue'
+import { addColumnAvatar } from '@/helper'
 export default defineComponent({
-  name: 'ColumnDetail',
   components: {
     PostList
   },
   setup() {
-    const store = useStore()
     const route = useRoute()
+    const store = useStore<GlobalDataProps>()
     const currentId = route.params.id
     onMounted(() => {
       store.dispatch('fetchColumn', currentId)
       store.dispatch('fetchPosts', currentId)
     })
-    const column = computed(() => store.getters.getColumnById(currentId))
+    const column = computed(() => {
+      const selectColumn = store.getters.getColumnById(currentId) as
+        | ColumnProps
+        | undefined
+      if (selectColumn) {
+        addColumnAvatar(selectColumn, 100, 100)
+      }
+      return selectColumn
+    })
     const list = computed(() => store.getters.getPostsByCid(currentId))
+
     return {
       column,
       list
@@ -48,5 +57,3 @@ export default defineComponent({
   }
 })
 </script>
-
-<style scoped></style>

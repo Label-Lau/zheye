@@ -37,8 +37,9 @@ interface limitProp {
   length: number
 }
 interface RuleProp {
-  type: 'required' | 'email' | 'range'
+  type: 'required' | 'email' | 'range'| 'custom'
   message?: string
+  validator?: () => boolean
   min?: limitProp
   max?: limitProp
 }
@@ -103,6 +104,9 @@ export default defineComponent({
               break
             case 'range':
               passed = isInRange(rule)
+              break
+            case 'custom':
+              passed = rule.validator ? rule.validator() : true
               break
             default:
               break

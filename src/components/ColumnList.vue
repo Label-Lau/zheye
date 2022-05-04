@@ -8,8 +8,9 @@
             :alt="column.title"
             class="rounded-circle border border-light my-3"
           />
+          {{ column.avatar }}
           <h5 class="card-title">{{ column.title }}</h5>
-          <p class="card-text">{{      column.description }}</p>
+          <p class="card-text">{{ column.description }}</p>
           <router-link
             :to="`/column/${column._id}`"
             class="btn btn-outline-primary"
@@ -25,6 +26,7 @@
 <script lang="ts">
 import { defineComponent, PropType, computed } from 'vue'
 import { ColumnProps } from '@/store'
+import { generateFitUrl } from '@/helper'
 
 export default defineComponent({
   name: 'ColumnList',
@@ -37,12 +39,7 @@ export default defineComponent({
   setup(props) {
     const columnList = computed(() => {
       return props.list.map((column) => {
-        if (!column.avatar) {
-          column.avatar = require('@/assets/column.jpg')
-        } else {
-          column.avatar.url =
-            column.avatar.url + '?x-oss-process=image/resize,m_pad,h_50,w_50'
-        }
+        generateFitUrl(column, 50, 50)
         return column
       })
     })
