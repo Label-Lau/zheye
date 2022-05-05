@@ -1,5 +1,13 @@
 <template>
   <div class="post-detail-page">
+    <modal
+      title="删除文章"
+      :visible="modalIsVisible"
+      @modal-on-close="modalIsVisible = false"
+      @modal-on-confirm="hideAndDelete"
+    >
+      <p>确定要删除这篇文章吗？</p>
+    </modal>
     <article class="w-75 mx-auto mb-5 pb-3" v-if="currentPost">
       <img
         :src="currentImageUrl"
@@ -30,28 +38,45 @@
         >
           编辑
         </router-link>
-        <button type="button" class="btn btn-danger">删除</button>
+        <button
+          type="button"
+          class="btn btn-danger"
+          @click.prevent="modalIsVisible = true"
+        >
+          删除
+        </button>
       </div>
     </article>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, computed } from 'vue'
+import { defineComponent, onMounted, computed, ref } from 'vue'
 import MarkdownIt from 'markdown-it'
 import { useStore } from 'vuex'
-import { useRoute } from 'vue-router'
-import { GlobalDataProps, PostProps, ImageProps, UserProps } from '@/store'
+import { useRoute, useRouter } from 'vue-router'
+import {
+  GlobalDataProps,
+  PostProps,
+  ImageProps,
+  UserProps,
+  ResponseType
+} from '@/store'
 import UserProfile from '../components/UserProfile.vue'
+import Modal from '../components/Modal.vue'
+import createMessage from '../components/createMessage'
 
 export default defineComponent({
   name: 'post-detail',
   components: {
-    UserProfile
+    UserProfile,
+    Modal
   },
   setup() {
     const store = useStore<GlobalDataProps>()
     const route = useRoute()
+    const router = useRouter()
+    const modalIsVisible = ref(false)
     const currentId = route.params.id
     const md = new MarkdownIt()
     onMounted(() => {
@@ -61,7 +86,6 @@ export default defineComponent({
     const currentPost = computed<PostProps>(() =>
       store.getters.getCurrentPost(currentId)
     )
-    // 文章内容
     const currentHTML = computed(() => {
       if (currentPost.value && currentPost.value.content) {
         return md.render(currentPost.value.content)
@@ -87,11 +111,24 @@ export default defineComponent({
         return null
       }
     })
+    const hideAndDelete = () => {
+      modalIsVisible.value = false
+      store
+        .dispatch('deletePost', currentId)
+        .then((rawData: ResponseType<PostProps>) => {
+          createMessage('删除成功，2秒后跳转到专栏首页', 'success', 2000)
+          setTimeout(() => {
+            router.push({ name: 'column', params: { id: rawData.data.column } })
+          }, 2000)
+        })
+    }
     return {
       currentPost,
       currentImageUrl,
       currentHTML,
-      showEditArea
+      showEditArea,
+      modalIsVisible,
+      hideAndDelete
     }
   }
 })
