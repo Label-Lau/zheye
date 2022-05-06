@@ -87,8 +87,9 @@ export default defineComponent({
       store.getters.getCurrentPost(currentId)
     )
     const currentHTML = computed(() => {
-      if (currentPost.value && currentPost.value.content) {
-        return md.render(currentPost.value.content)
+      const { content, isHTML } = currentPost.value
+      if (currentPost.value && content) {
+        return isHTML ? content : md.render(content)
       }
       return ''
     })
